@@ -5,9 +5,23 @@ their code.
 But often, a developer's peers are too busy or lack the context to provide
 comments.
 Backseat Driver prompts a large language model to give a code base a letter
-grade for readability, expressiveness, style, and organization.
+grade for readability, expressiveness, and organization.
 It also instructs the model to explain its reasoning.
 Developers gain the benefits of a code review without needing another engineer.
+
+Backseat Driver is not a linting tool.
+Linters check code compliance with a language-specific style guide.
+While linters are extremely valuable for promoting readability and
+standardizing practices within a team, they don't examine a code base for key
+elements that make code relatable to another human being.
+For example, linters don't comment on function or variable names except to
+ensure that they use the correct combination of lower case, upper case, and
+other characters.
+Linters also do not discuss whether a function or class has a sensible
+interface with which to interact.
+Backseat Driver fills this gap.
+
+TODO revise above
 
 ## Installation
 

@@ -1,7 +1,7 @@
 # Backseat Driver
 
-Software developers want code reviews from colleagues so that they can improve
-their code.
+Software developers want reviews from colleagues so that they can improve the
+code they write.
 But often, a developer's peers are too busy or lack the context to provide
 comments.
 Backseat Driver prompts a large language model to give a code base a letter

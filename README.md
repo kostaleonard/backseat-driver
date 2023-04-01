@@ -40,12 +40,12 @@ TODO
 TODO
 
 ```yaml
-# TODO this config should have a fail-under entry for the letter grade. Here, code must score at least a B
 # TODO not sure what source-directory should be in GitHub Actions
 backseat-driver:
-  openai-key: ${{ secrets.OPENAI_KEY }}
-  fail-under: B
-  source-directory: /
+  openai_key: ${{ secrets.OPENAI_KEY }}
+  fail_under: B
+  source_directory: /
+  filter_files_by_suffix: ".py"
 ```
 
 ## Example output

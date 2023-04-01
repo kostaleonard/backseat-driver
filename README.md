@@ -14,14 +14,13 @@ Linters check code compliance with a language-specific style guide.
 While linters are extremely valuable for promoting readability and
 standardizing practices within a team, they don't examine a code base for key
 elements that make code relatable to another human being.
-For example, linters don't comment on function or variable names except to
-ensure that they use the correct combination of lower case, upper case, and
-other characters.
-Linters also do not discuss whether a function or class has a sensible
-interface with which to interact.
-Backseat Driver fills this gap.
-
-TODO revise above
+For example, linters don't comment on whether function or variable names
+express the intent of the author.
+They only ensure that names use the correct combination of lower case, upper
+case, and other characters.
+Linters also do not discuss whether functions or classes have intuitive
+interfaces.
+Backseat Driver goes beyond linting, looking for deeper ways to improve code.
 
 ## Installation
 

@@ -41,7 +41,7 @@ TODO
 ```yaml
 # TODO not sure what source-directory should be in GitHub Actions
 backseat-driver:
-  openai_key: ${{ secrets.OPENAI_KEY }}
+  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
   fail_under: B
   source_directory: /
   filter_files_by_suffix: ".py"

@@ -6,6 +6,26 @@ import sys
 LETTER_GRADES = ["A", "B", "C", "D", "F"]
 
 
+def get_source_filenames(
+    source_directory: str, filter_files_by_suffix: str | None = None
+) -> list[str]:
+    """Returns the filenames in a recursive listing of the source directory.
+
+    :param source_directory: The directory in which to find files.
+    :param filter_files_by_suffix: If specified, return only files whose names
+        end with the given string. If None, return all files.
+    """
+    # TODO
+
+
+def get_source_contents(source_filenames: list[str]) -> list[str]:
+    """Return the contents of all given files.
+
+    :param source_filenames: The files to read.
+    """
+    # TODO
+
+
 def get_args(args: list[str]) -> Namespace:
     """Returns a Namespace containing the command line arguments.
 
@@ -24,8 +44,8 @@ def get_args(args: list[str]) -> Namespace:
     parser.add_argument(
         "--source_directory",
         default=".",
-        help="The directory to search for source files. The LLM will perform "
-        "its code review on these files.",
+        help="The directory to search for source files. This search is "
+        "recursive. The LLM will perform its code review on these files.",
     )
     parser.add_argument(
         "--filter_files_by_suffix",
@@ -46,7 +66,7 @@ def get_args(args: list[str]) -> Namespace:
         "matter the LLM's grade.",
     )
     parser.add_argument(
-        "--openai_key",
+        "--openai_api_key",
         required=True,
         help="The user's OpenAI API key. Each code review will make a request "
         "on an OpenAI model, which will incur a marginal cost. GPT3.5, "
@@ -57,7 +77,9 @@ def get_args(args: list[str]) -> Namespace:
 
 def main() -> None:
     """Runs a code review on the user-specified directory."""
-    _ = get_args(sys.argv[1:])
+    args = get_args(sys.argv[1:])
+    source_filenames = get_source_filenames(args.source_directory)
+    _ = get_source_contents(source_filenames)
 
 
 if __name__ == "__main__":

@@ -77,6 +77,20 @@ def get_prompt(source_contents: list[str], max_length: int | None = None) -> str
     return prompt
 
 
+def get_model_prediction(prompt: str) -> dict:
+    """Returns the language model's response to the prompt.
+
+    :param prompt: The body of a prompt for the language model.
+    """
+    return openai.ChatCompletion.create(
+        model=MODEL,
+        messages=[
+            {"role": "system", "content": "You are a code review assistant."},
+            {"role": "user", "content": prompt},
+        ],
+    )
+
+
 def get_args(args: list[str]) -> Namespace:
     """Returns a Namespace containing the command line arguments.
 
@@ -131,14 +145,10 @@ def main() -> None:
     prompt = get_prompt(source_contents, max_length=MAX_PROMPT_LENGTH)
     print(f"Prompt:\n{prompt}")
     print("=" * 79)
-    response = openai.ChatCompletion.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": "You are a code review assistant."},
-            {"role": "user", "content": prompt},
-        ],
-    )
-    print(f"Response:\n{response}")
+    response = get_model_prediction(prompt)
+    code_review_message = response["choices"][0]["message"]["content"]
+    print(f"Response:\n{code_review_message}")
+    # TODO fail under
 
 
 if __name__ == "__main__":

@@ -1,7 +1,9 @@
 """Tests backseat_driver.py."""
 
+import json
 import os
 from tempfile import TemporaryDirectory
+from unittest import mock
 import pytest
 from backseat_driver import backseat_driver
 
@@ -142,6 +144,26 @@ def test_get_prompt_splits_too_long_contents_on_newline(sample_source_contents) 
     for line in prompt.split("\n"):
         if line in sample_source_contents:
             assert line in sample_source_contents_lines
+
+
+def _get_sample_model_prediction() -> str:
+    """Returns the sample model prediction."""
+    with open(
+        os.path.join("tests", "fixtures", "sample_model_prediction.json"),
+        "r",
+        encoding="utf-8",
+    ) as infile:
+        return json.loads(infile.read())
+
+
+def test_get_model_prediction_returns_response_json(sample_source_contents) -> None:
+    """Tests that get_model_prediction returns the model's response JSON."""
+    prompt = backseat_driver.get_prompt([sample_source_contents])
+    with mock.patch(
+        "openai.ChatCompletion.create", return_value=_get_sample_model_prediction()
+    ):
+        response = backseat_driver.get_model_prediction(prompt)
+    assert response["choices"][0]["message"]["content"].startswith("Grade:")
 
 
 def test_get_args_returns_namespace_containing_args() -> None:

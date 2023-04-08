@@ -1,8 +1,6 @@
 """Requests a code review from a large language model."""
 
 from argparse import ArgumentParser, Namespace
-import glob
-import os
 import sys
 import openai
 
@@ -13,29 +11,6 @@ APPROXIMATE_NUM_CHARACTERS_PER_TOKEN = 4
 # Use a conservative estimate for the number of characters per prompt so that
 # the model doesn't cut off something important.
 MAX_PROMPT_LENGTH = GPT_3_5_MAX_TOKENS * (APPROXIMATE_NUM_CHARACTERS_PER_TOKEN - 1)
-
-
-def get_source_filenames(
-    source_directory: str, filter_files_by_suffix: str | None = None
-) -> set[str]:
-    """Returns the filenames in a recursive listing of the source directory.
-
-    :param source_directory: The directory in which to find files.
-    :param filter_files_by_suffix: If specified, return only files whose names
-        end with the given string. If None, return all files.
-    :return: The filenames in a recursive listing of the source directory.
-        The filenames are in arbitrary order, so the return type is set.
-    """
-    if filter_files_by_suffix is None:
-        filter_files_by_suffix = ""
-    paths_with_directories = glob.glob(
-        os.path.join(source_directory, "**", f"*{filter_files_by_suffix}"),
-        recursive=True,
-    )
-    paths_without_directories = [
-        path for path in paths_with_directories if not os.path.isdir(path)
-    ]
-    return set(paths_without_directories)
 
 
 def get_source_contents(source_filenames: list[str]) -> list[str]:
@@ -134,17 +109,7 @@ def get_args(args: list[str]) -> Namespace:
         "as well as the model's reasoning."
     )
     parser.add_argument(
-        "--source_directory",
-        default=".",
-        help="The directory to search for source files. This search is "
-        "recursive. The LLM will perform its code review on these files.",
-    )
-    parser.add_argument(
-        "--filter_files_by_suffix",
-        default=None,
-        help="If specified, select only the files that end with the given "
-        'string for code review. For instance, a value of ".py" '
-        "selects only the Python files.",
+        "filenames", nargs="+", help="The files to pass to the LLm for code review."
     )
     parser.add_argument(
         "--fail_under",
@@ -163,12 +128,7 @@ def get_args(args: list[str]) -> Namespace:
 def main() -> None:
     """Runs a code review on the user-specified directory."""
     args = get_args(sys.argv[1:])
-    source_filenames = list(
-        get_source_filenames(
-            args.source_directory, filter_files_by_suffix=args.filter_files_by_suffix
-        )
-    )
-    source_contents = get_source_contents(source_filenames)
+    source_contents = get_source_contents(args.filenames)
     prompt = get_prompt(source_contents, max_length=MAX_PROMPT_LENGTH)
     print(f"Prompt:\n{prompt}")
     print("=" * 79)

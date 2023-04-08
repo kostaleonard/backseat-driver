@@ -1,5 +1,6 @@
 """Tests backseat_driver.py."""
 
+import glob
 import json
 import os
 from tempfile import TemporaryDirectory
@@ -59,54 +60,15 @@ def fixture_sample_model_prediction() -> dict:
         return json.loads(infile.read())
 
 
-def test_get_source_filenames_finds_files_in_flat_directory(
-    flat_source_directory,
-) -> None:
-    """Tests that get_source_filenames finds all files in a flat directory."""
-    source_filenames = backseat_driver.get_source_filenames(flat_source_directory)
-    assert source_filenames == {
-        os.path.join(flat_source_directory, "test1.txt"),
-        os.path.join(flat_source_directory, "test2.txt"),
-        os.path.join(flat_source_directory, "test3.py"),
-    }
-
-
-def test_get_source_filenames_finds_files_in_nested_directory(
-    nested_source_directory,
-) -> None:
-    """Tests that get_source_filenames finds all files in a nested
-    directory."""
-    source_filenames = backseat_driver.get_source_filenames(nested_source_directory)
-    assert source_filenames == {
-        os.path.join(nested_source_directory, "test1.txt"),
-        os.path.join(nested_source_directory, "test2.txt"),
-        os.path.join(nested_source_directory, "test3.py"),
-        os.path.join(nested_source_directory, "dir1", "dir.txt"),
-        os.path.join(nested_source_directory, "dir2", "dir.txt"),
-        os.path.join(nested_source_directory, "dir2", "dir3", "dir.txt"),
-    }
-
-
-def test_get_source_filenames_filters_files_by_suffix(flat_source_directory) -> None:
-    """Tests that get_source_filenames filters files by their suffix."""
-    source_filenames = backseat_driver.get_source_filenames(
-        flat_source_directory, filter_files_by_suffix=".py"
-    )
-    assert source_filenames == {
-        os.path.join(flat_source_directory, "test3.py"),
-    }
-    source_filenames = backseat_driver.get_source_filenames(
-        flat_source_directory, filter_files_by_suffix=".txt"
-    )
-    assert source_filenames == {
-        os.path.join(flat_source_directory, "test1.txt"),
-        os.path.join(flat_source_directory, "test2.txt"),
-    }
-
-
 def test_get_source_contents_reads_contents(nested_source_directory) -> None:
     """Tests that get_source_contents reads the file contents."""
-    source_filenames = backseat_driver.get_source_filenames(nested_source_directory)
+    source_filenames_with_directories = glob.glob(
+        os.path.join(nested_source_directory, "**", "*"),
+        recursive=True,
+    )
+    source_filenames = [
+        path for path in source_filenames_with_directories if not os.path.isdir(path)
+    ]
     sorted_filenames = sorted(source_filenames)
     sorted_contents = backseat_driver.get_source_contents(sorted_filenames)
     assert sorted_contents == [
@@ -215,17 +177,16 @@ def test_is_grade_under_raises_error_on_invalid_grade() -> None:
 def test_get_args_returns_namespace_containing_args() -> None:
     """Tests that get_args returns a namespace containing the command line
     arguments."""
-    args = backseat_driver.get_args(["--fail_under=B", "--filter_files_by_suffix=.py"])
-    assert args.source_directory == "."
-    assert args.filter_files_by_suffix == ".py"
+    args = backseat_driver.get_args(["--fail_under=B", "script1.py", "script2.py"])
     assert args.fail_under == "B"
+    assert args.filenames == ["script1.py", "script2.py"]
 
 
 def test_get_args_raises_error_when_fail_under_invalid() -> None:
     """Tests that get_args raises an error when fail_under is not a letter
     grade."""
     with pytest.raises(SystemExit):
-        _ = backseat_driver.get_args(["--fail_under=Q"])
+        _ = backseat_driver.get_args(["--fail_under=Q", "script.py"])
 
 
 def test_main_no_errors_when_grade_better_than_fail_under(
@@ -235,10 +196,9 @@ def test_main_no_errors_when_grade_better_than_fail_under(
     fail_under criteria."""
     test_args = [
         "backseat_driver.py",
-        "--filter_files_by_suffix",
-        ".py",
         "--fail_under",
         "B",
+        "tests/fixtures/sample_source_file.py",
     ]
     with mock.patch("sys.argv", test_args), mock.patch(
         "openai.ChatCompletion.create", return_value=sample_model_prediction
@@ -253,10 +213,9 @@ def test_main_raises_error_when_grade_worse_than_fail_under(
     fail_under criteria."""
     test_args = [
         "backseat_driver.py",
-        "--filter_files_by_suffix",
-        ".py",
         "--fail_under",
         "A",
+        "tests/fixtures/sample_source_file.py",
     ]
     with mock.patch("sys.argv", test_args), mock.patch(
         "openai.ChatCompletion.create", return_value=sample_model_prediction

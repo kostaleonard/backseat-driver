@@ -91,6 +91,33 @@ def get_model_prediction(prompt: str) -> dict:
     )
 
 
+def get_grade_from_prediction(prediction: dict) -> str:
+    """Return the letter grade from the prediction.
+
+    Raises a ValueError if the prediction does not start with "Grade: " and
+    then a valid letter grade.
+    """
+    code_review_message = prediction["choices"][0]["message"]["content"]
+    grade_prefix = "grade: "
+    if not code_review_message.lower().startswith(grade_prefix):
+        raise ValueError("Code review message in prediction does not start with grade.")
+    grade = code_review_message[len(grade_prefix)].upper()
+    if grade not in LETTER_GRADES:
+        raise ValueError(
+            f"Model prediction does not contain a letter grade:\n{prediction}"
+        )
+    return grade
+
+
+def is_grade_under(grade, fail_under) -> bool:
+    """Returns True if the grade is under (worse than) than the benchmark.
+
+    :param grade: The model's predicted grade.
+    :param fail_under: The benchmark grade.
+    """
+    return LETTER_GRADES.index(grade) > LETTER_GRADES.index(fail_under)
+
+
 def get_args(args: list[str]) -> Namespace:
     """Returns a Namespace containing the command line arguments.
 
@@ -145,10 +172,15 @@ def main() -> None:
     prompt = get_prompt(source_contents, max_length=MAX_PROMPT_LENGTH)
     print(f"Prompt:\n{prompt}")
     print("=" * 79)
-    response = get_model_prediction(prompt)
-    code_review_message = response["choices"][0]["message"]["content"]
+    prediction = get_model_prediction(prompt)
+    code_review_message = prediction["choices"][0]["message"]["content"]
     print(f"Response:\n{code_review_message}")
-    # TODO fail under
+    if args.fail_under:
+        grade = get_grade_from_prediction(prediction)
+        if is_grade_under(grade, args.fail_under):
+            raise ValueError(
+                f"Returned grade did not meet fail_under criteria: {grade} < {args.fail_under}"
+            )
 
 
 if __name__ == "__main__":

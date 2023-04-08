@@ -5,6 +5,8 @@ from tempfile import TemporaryDirectory
 import pytest
 from backseat_driver import backseat_driver
 
+SAMPLE_SOURCE_FILE = os.path.join("tests", "fixtures", "sample_source_file.py")
+
 
 @pytest.fixture(name="flat_source_directory")
 def fixture_flat_source_directory() -> str:
@@ -35,6 +37,13 @@ def fixture_nested_source_directory(flat_source_directory) -> str:
         with open(os.path.join(directory, "dir.txt"), "w", encoding="utf-8") as outfile:
             outfile.write("dir.txt")
     yield flat_source_directory
+
+
+@pytest.fixture(name="sample_source_contents")
+def fixture_sample_source_contents() -> str:
+    """Returns the contents of the sample source file."""
+    with open(SAMPLE_SOURCE_FILE, "r", encoding="utf-8") as infile:
+        return infile.read()
 
 
 def test_get_source_filenames_finds_files_in_flat_directory(
@@ -95,6 +104,44 @@ def test_get_source_contents_reads_contents(nested_source_directory) -> None:
         "test2.txt",
         "test3.py",
     ]
+
+
+def test_get_prompt_uses_source_contents(sample_source_contents) -> None:
+    """Tests that get_prompt returns a prompt containing some data that appears
+    in the source files."""
+    prompt = backseat_driver.get_prompt([sample_source_contents])
+    assert "fib" in prompt or "fact" in prompt or "hailstone" in prompt
+
+
+def test_get_prompt_uses_multiple_source_contents(sample_source_contents) -> None:
+    """Tests that get_prompt returns a prompt based on multiple source
+    files."""
+    prompt = backseat_driver.get_prompt(
+        [sample_source_contents, sample_source_contents]
+    )
+    assert prompt.count("factorial") == 2
+
+
+def test_get_prompt_returns_prompt_shorter_than_max_length(
+    sample_source_contents,
+) -> None:
+    """Tests that get_prompt returns a prompt shorter than the max length, if
+    it is provided."""
+    max_length = 400
+    prompt = backseat_driver.get_prompt([sample_source_contents], max_length=max_length)
+    assert "fib" in prompt
+    assert len(prompt) <= max_length
+
+
+def test_get_prompt_splits_too_long_contents_on_newline(sample_source_contents) -> None:
+    """Tests that get_prompt splits contents that exceed the max length on a
+    newline character."""
+    max_length = 405
+    prompt = backseat_driver.get_prompt([sample_source_contents], max_length=max_length)
+    sample_source_contents_lines = sample_source_contents.split("\n")
+    for line in prompt.split("\n"):
+        if line in sample_source_contents:
+            assert line in sample_source_contents_lines
 
 
 def test_get_args_returns_namespace_containing_args() -> None:

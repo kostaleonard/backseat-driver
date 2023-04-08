@@ -127,7 +127,7 @@ def test_get_prompt_returns_prompt_shorter_than_max_length(
 ) -> None:
     """Tests that get_prompt returns a prompt shorter than the max length, if
     it is provided."""
-    max_length = 400
+    max_length = 420
     prompt = backseat_driver.get_prompt([sample_source_contents], max_length=max_length)
     assert "fib" in prompt
     assert len(prompt) <= max_length
@@ -136,7 +136,7 @@ def test_get_prompt_returns_prompt_shorter_than_max_length(
 def test_get_prompt_splits_too_long_contents_on_newline(sample_source_contents) -> None:
     """Tests that get_prompt splits contents that exceed the max length on a
     newline character."""
-    max_length = 405
+    max_length = 425
     prompt = backseat_driver.get_prompt([sample_source_contents], max_length=max_length)
     sample_source_contents_lines = sample_source_contents.split("\n")
     for line in prompt.split("\n"):

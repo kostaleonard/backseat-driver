@@ -1,6 +1,8 @@
 """Requests a code review from a large language model."""
 
 from argparse import ArgumentParser, Namespace
+import glob
+import os
 import sys
 
 LETTER_GRADES = ["A", "B", "C", "D", "F"]
@@ -8,18 +10,29 @@ LETTER_GRADES = ["A", "B", "C", "D", "F"]
 
 def get_source_filenames(
     source_directory: str, filter_files_by_suffix: str | None = None
-) -> list[str]:
+) -> set[str]:
     """Returns the filenames in a recursive listing of the source directory.
 
     :param source_directory: The directory in which to find files.
     :param filter_files_by_suffix: If specified, return only files whose names
         end with the given string. If None, return all files.
+    :return: The filenames in a recursive listing of the source directory.
+        The filenames are in arbitrary order, so the return type is set.
     """
-    # TODO
+    if filter_files_by_suffix is None:
+        filter_files_by_suffix = ""
+    paths_with_directories = glob.glob(
+        os.path.join(source_directory, "**", f"*{filter_files_by_suffix}"),
+        recursive=True,
+    )
+    paths_without_directories = [
+        path for path in paths_with_directories if not os.path.isdir(path)
+    ]
+    return set(paths_without_directories)
 
 
 def get_source_contents(source_filenames: list[str]) -> list[str]:
-    """Return the contents of all given files.
+    """Return the contents of all given files in the same order as the input.
 
     :param source_filenames: The files to read.
     """
@@ -78,7 +91,7 @@ def get_args(args: list[str]) -> Namespace:
 def main() -> None:
     """Runs a code review on the user-specified directory."""
     args = get_args(sys.argv[1:])
-    source_filenames = get_source_filenames(args.source_directory)
+    source_filenames = list(get_source_filenames(args.source_directory))
     _ = get_source_contents(source_filenames)
 
 

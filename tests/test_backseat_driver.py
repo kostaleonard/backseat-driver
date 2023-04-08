@@ -13,7 +13,7 @@ def fixture_flat_source_directory() -> str:
     The content of each file is the filename.
     """
     with TemporaryDirectory() as temp_dir:
-        for filename in {"test1.txt", "test2.txt", "test3.py"}:
+        for filename in "test1.txt", "test2.txt", "test3.py":
             with open(
                 os.path.join(temp_dir, filename), "w", encoding="utf-8"
             ) as outfile:
@@ -33,7 +33,7 @@ def fixture_nested_source_directory(flat_source_directory) -> str:
     for directory in [dir1, dir2, dir3]:
         os.mkdir(directory)
         with open(os.path.join(directory, "dir.txt"), "w", encoding="utf-8") as outfile:
-            outfile.write(directory)
+            outfile.write("dir.txt")
     yield flat_source_directory
 
 
@@ -80,6 +80,21 @@ def test_get_source_filenames_filters_files_by_suffix(flat_source_directory) -> 
         os.path.join(flat_source_directory, "test1.txt"),
         os.path.join(flat_source_directory, "test2.txt"),
     }
+
+
+def test_get_source_contents_reads_contents(nested_source_directory) -> None:
+    """Tests that get_source_contents reads the file contents."""
+    source_filenames = backseat_driver.get_source_filenames(nested_source_directory)
+    sorted_filenames = sorted(source_filenames)
+    sorted_contents = backseat_driver.get_source_contents(sorted_filenames)
+    assert sorted_contents == [
+        "dir.txt",
+        "dir.txt",
+        "dir.txt",
+        "test1.txt",
+        "test2.txt",
+        "test3.py",
+    ]
 
 
 def test_get_args_returns_namespace_containing_args() -> None:

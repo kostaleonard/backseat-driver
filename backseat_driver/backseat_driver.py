@@ -36,7 +36,11 @@ def get_source_contents(source_filenames: list[str]) -> list[str]:
 
     :param source_filenames: The files to read.
     """
-    # TODO
+    contents = []
+    for filename in source_filenames:
+        with open(filename, "r", encoding="utf-8") as infile:
+            contents.append(infile.read())
+    return contents
 
 
 def get_args(args: list[str]) -> Namespace:

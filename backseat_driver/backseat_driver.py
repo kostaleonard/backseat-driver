@@ -59,7 +59,19 @@ def get_prompt(source_contents: list[str], max_length: int | None = None) -> str
         important parts of the prompt. If not specified, the prompt will
         contain all source contents.
     """
-    # TODO
+    prompt = (
+        "Give the following code a letter grade based on readability, style, "
+        "and structure. Valid letter grades are A (exceptional), B (very "
+        "good), C (mediocre), D (poor), and F (unsatisfactory). Explain your "
+        "reasoning and give recommendations for improvements. Begin your "
+        'response with "Grade: " and the letter grade.\n'
+    )
+    all_source_contents = "\n".join(source_contents)
+    for line in all_source_contents.split("\n"):
+        if max_length and len(prompt) + 1 + len(line) > max_length:
+            break
+        prompt += "\n" + line
+    return prompt
 
 
 def get_args(args: list[str]) -> Namespace:

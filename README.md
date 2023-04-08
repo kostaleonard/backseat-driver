@@ -49,10 +49,45 @@ backseat-driver:
 
 ## Example output
 
-TODO input program
+You can try Backseat Driver on the input program below to see how it works.
+Copy the code below into a file and run Backseat Driver with the following.
+
+TODO show python command to reproduce this output
 
 ```python
-# TODO input program
+"""A file for testing prompt creation."""
+
+
+def fib(n):
+    """Returns the nth fibonacci number."""
+    if n <= 2:
+        return 1
+    return fib(n - 1) + fib(n - 2)
+
+
+def fact(n):
+    """Returns n factorial."""
+    if n <= 1:
+        return 1
+    return n * fact(n - 1)
+
+
+def hailstone(n):
+    """Returns the hailstone sequence starting with positive integer n."""
+    if n <= 0:
+        raise ValueError(f"Cannot compute hailstone of negative number {n}")
+    if n == 1:
+        return [n]
+    if n % 2 == 0:
+        return [n] + hailstone(n // 2)
+    return [n] + hailstone(3 * n + 1)
+
 ```
 
-TODO backseat driver output
+What Backseat Driver says:
+
+> Grade: A
+> 
+> This code is well-written, easy to read, and well-organized. The function names are clear and descriptive, and the docstrings provide useful information about the functions' purpose and behavior. The code also follows the recommended Python style guidelines (PEP 8), including appropriate indentation, whitespace, and naming conventions. Overall, there are no major issues with the code, and it is highly readable and maintainable.
+> 
+> One possible improvement could be to add some error handling to the `fib()` and `fact()` functions, for cases where the input is not a positive integer. Another potential improvement could be to add some more comments to explain the logic behind the `hailstone()` function. However, these are minor suggestions and are not necessary for the code to function correctly.

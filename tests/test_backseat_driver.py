@@ -1,7 +1,9 @@
 """Tests backseat_driver.py."""
 
+import json
 import os
 from tempfile import TemporaryDirectory
+from unittest import mock
 import pytest
 from backseat_driver import backseat_driver
 
@@ -44,6 +46,17 @@ def fixture_sample_source_contents() -> str:
     """Returns the contents of the sample source file."""
     with open(SAMPLE_SOURCE_FILE, "r", encoding="utf-8") as infile:
         return infile.read()
+
+
+@pytest.fixture(name="sample_model_prediction")
+def fixture_sample_model_prediction() -> dict:
+    """Returns the sample model prediction."""
+    with open(
+        os.path.join("tests", "fixtures", "sample_model_prediction.json"),
+        "r",
+        encoding="utf-8",
+    ) as infile:
+        return json.loads(infile.read())
 
 
 def test_get_source_filenames_finds_files_in_flat_directory(
@@ -127,7 +140,7 @@ def test_get_prompt_returns_prompt_shorter_than_max_length(
 ) -> None:
     """Tests that get_prompt returns a prompt shorter than the max length, if
     it is provided."""
-    max_length = 400
+    max_length = 420
     prompt = backseat_driver.get_prompt([sample_source_contents], max_length=max_length)
     assert "fib" in prompt
     assert len(prompt) <= max_length
@@ -136,7 +149,7 @@ def test_get_prompt_returns_prompt_shorter_than_max_length(
 def test_get_prompt_splits_too_long_contents_on_newline(sample_source_contents) -> None:
     """Tests that get_prompt splits contents that exceed the max length on a
     newline character."""
-    max_length = 405
+    max_length = 425
     prompt = backseat_driver.get_prompt([sample_source_contents], max_length=max_length)
     sample_source_contents_lines = sample_source_contents.split("\n")
     for line in prompt.split("\n"):
@@ -144,27 +157,108 @@ def test_get_prompt_splits_too_long_contents_on_newline(sample_source_contents) 
             assert line in sample_source_contents_lines
 
 
+def test_get_model_prediction_returns_response_json(
+    sample_source_contents, sample_model_prediction
+) -> None:
+    """Tests that get_model_prediction returns the model's response JSON."""
+    prompt = backseat_driver.get_prompt([sample_source_contents])
+    with mock.patch(
+        "openai.ChatCompletion.create", return_value=sample_model_prediction
+    ):
+        response = backseat_driver.get_model_prediction(prompt)
+    assert response["choices"][0]["message"]["content"].startswith("Grade:")
+
+
+def test_get_grade_from_prediction_returns_grade(sample_model_prediction) -> None:
+    """Tests that get_grade_from_prediction gets the grade from a
+    well-formatted prediction."""
+    assert backseat_driver.get_grade_from_prediction(sample_model_prediction) == "B"
+
+
+def test_get_grade_from_prediction_raises_error_on_invalid_grade() -> None:
+    """Tests that get_grade_from_prediction raises an error when the prediction
+    gives an invalid grade."""
+    malformed_prediction = {
+        "choices": [{"message": {"content": "Grade: X. Here's my reasoning."}}]
+    }
+    with pytest.raises(ValueError):
+        _ = backseat_driver.get_grade_from_prediction(malformed_prediction)
+
+
+def test_get_grade_from_prediction_raises_error_no_upfront_grade() -> None:
+    """Tests that get_grade_from_prediction raises an error when the prediction
+    does not start with the grade."""
+    malformed_prediction = {
+        "choices": [{"message": {"content": "Here's my reasoning. Grade: A"}}]
+    }
+    with pytest.raises(ValueError):
+        _ = backseat_driver.get_grade_from_prediction(malformed_prediction)
+
+
+def test_is_grade_under_correctly_compares_grades() -> None:
+    """Tests that is_grade_under correctly compares grades."""
+    assert backseat_driver.is_grade_under("B", "A")
+    assert backseat_driver.is_grade_under("C", "A")
+    assert not backseat_driver.is_grade_under("A", "A")
+    assert not backseat_driver.is_grade_under("B", "F")
+    assert backseat_driver.is_grade_under("D", "C")
+
+
+def test_is_grade_under_raises_error_on_invalid_grade() -> None:
+    """Tests that is_grade_under raises an error if either grade is invalid."""
+    with pytest.raises(ValueError):
+        _ = backseat_driver.is_grade_under("X", "A")
+    with pytest.raises(ValueError):
+        _ = backseat_driver.is_grade_under("B", "Y")
+
+
 def test_get_args_returns_namespace_containing_args() -> None:
     """Tests that get_args returns a namespace containing the command line
     arguments."""
-    args = backseat_driver.get_args(
-        ["--openai_api_key=123", "--fail_under=B", "--filter_files_by_suffix=.py"]
-    )
+    args = backseat_driver.get_args(["--fail_under=B", "--filter_files_by_suffix=.py"])
     assert args.source_directory == "."
     assert args.filter_files_by_suffix == ".py"
     assert args.fail_under == "B"
-    assert args.openai_api_key == "123"
 
 
 def test_get_args_raises_error_when_fail_under_invalid() -> None:
     """Tests that get_args raises an error when fail_under is not a letter
     grade."""
     with pytest.raises(SystemExit):
-        _ = backseat_driver.get_args(["--openai_api_key=123", "--fail_under=Q"])
+        _ = backseat_driver.get_args(["--fail_under=Q"])
 
 
-def test_get_args_raises_error_when_openai_api_key_unspecified() -> None:
-    """Tests that get_args raises an error when openai_api_key is
-    unspecified."""
-    with pytest.raises(SystemExit):
-        _ = backseat_driver.get_args([])
+def test_main_no_errors_when_grade_better_than_fail_under(
+    sample_model_prediction,
+) -> None:
+    """Tests that main exits with no errors when the grade is better than the
+    fail_under criteria."""
+    test_args = [
+        "backseat_driver.py",
+        "--filter_files_by_suffix",
+        ".py",
+        "--fail_under",
+        "B",
+    ]
+    with mock.patch("sys.argv", test_args), mock.patch(
+        "openai.ChatCompletion.create", return_value=sample_model_prediction
+    ):
+        backseat_driver.main()
+
+
+def test_main_raises_error_when_grade_worse_than_fail_under(
+    sample_model_prediction,
+) -> None:
+    """Tests that main exits with no errors when the grade is better than the
+    fail_under criteria."""
+    test_args = [
+        "backseat_driver.py",
+        "--filter_files_by_suffix",
+        ".py",
+        "--fail_under",
+        "A",
+    ]
+    with mock.patch("sys.argv", test_args), mock.patch(
+        "openai.ChatCompletion.create", return_value=sample_model_prediction
+    ), pytest.raises(ValueError):
+        backseat_driver.main()

@@ -97,6 +97,24 @@ def test_get_source_contents_reads_contents(nested_source_directory) -> None:
     ]
 
 
+def test_get_prompt_uses_source_contents() -> None:
+    """Tests that get_prompt returns a prompt containing some data that appears
+    in the source files."""
+    # TODO
+
+
+def test_get_prompt_returns_prompt_shorter_than_max_length() -> None:
+    """Tests that get_prompt returns a prompt shorter than the max length, if
+    it is provided."""
+    # TODO
+
+
+def test_get_prompt_splits_too_long_contents_on_newline() -> None:
+    """Tests that get_prompt splits contents that exceed the max length on a
+    newline character."""
+    # TODO
+
+
 def test_get_args_returns_namespace_containing_args() -> None:
     """Tests that get_args returns a namespace containing the command line
     arguments."""

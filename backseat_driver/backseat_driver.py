@@ -6,6 +6,11 @@ import os
 import sys
 
 LETTER_GRADES = ["A", "B", "C", "D", "F"]
+GPT_3_5_MAX_TOKENS = 4096
+APPROXIMATE_NUM_CHARACTERS_PER_TOKEN = 4
+# Use a conservative estimate for the number of characters per prompt so that
+# the model doesn't cut off something important.
+MAX_PROMPT_LENGTH = GPT_3_5_MAX_TOKENS * (APPROXIMATE_NUM_CHARACTERS_PER_TOKEN - 1)
 
 
 def get_source_filenames(
@@ -41,6 +46,20 @@ def get_source_contents(source_filenames: list[str]) -> list[str]:
         with open(filename, "r", encoding="utf-8") as infile:
             contents.append(infile.read())
     return contents
+
+
+def get_prompt(source_contents: list[str], max_length: int | None = None) -> str:
+    """Returns the prompt for the language model to perform code review.
+
+    :param source_contents: The contents of all source files to be reviewed.
+    :param max_length: The maximum length of the prompt, in characters.
+        Language models take a maximum number of tokens (roughly 4 characters;
+        somewhere between a syllable and a word) as context. Configuring this
+        parameter helps ensure that the model doesn't incorrectly cut off
+        important parts of the prompt. If not specified, the prompt will
+        contain all source contents.
+    """
+    # TODO
 
 
 def get_args(args: list[str]) -> Namespace:
@@ -96,7 +115,8 @@ def main() -> None:
     """Runs a code review on the user-specified directory."""
     args = get_args(sys.argv[1:])
     source_filenames = list(get_source_filenames(args.source_directory))
-    _ = get_source_contents(source_filenames)
+    source_contents = get_source_contents(source_filenames)
+    _ = get_prompt(source_contents, max_length=MAX_PROMPT_LENGTH)
 
 
 if __name__ == "__main__":

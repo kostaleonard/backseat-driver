@@ -4,8 +4,10 @@ from argparse import ArgumentParser, Namespace
 import glob
 import os
 import sys
+import openai
 
 LETTER_GRADES = ["A", "B", "C", "D", "F"]
+MODEL = "gpt-3.5-turbo"
 GPT_3_5_MAX_TOKENS = 4096
 APPROXIMATE_NUM_CHARACTERS_PER_TOKEN = 4
 # Use a conservative estimate for the number of characters per prompt so that
@@ -64,7 +66,7 @@ def get_prompt(source_contents: list[str], max_length: int | None = None) -> str
         "and structure. Valid letter grades are A (exceptional), B (very "
         "good), C (mediocre), D (poor), and F (unsatisfactory). Explain your "
         "reasoning and give recommendations for improvements. Don't suggest "
-        'adding comments to the code Begin your response with "Grade: " and '
+        'adding comments to the code. Begin your response with "Grade: " and '
         "the letter grade.\n"
     )
     all_source_contents = "\n".join(source_contents)
@@ -114,22 +116,29 @@ def get_args(args: list[str]) -> Namespace:
         "specified, then the program will exit with a zero status no "
         "matter the LLM's grade.",
     )
-    parser.add_argument(
-        "--openai_api_key",
-        required=True,
-        help="The user's OpenAI API key. Each code review will make a request "
-        "on an OpenAI model, which will incur a marginal cost. GPT3.5, "
-        "for instance, currently costs $0.002 per 1K tokens.",
-    )
     return parser.parse_args(args=args)
 
 
 def main() -> None:
     """Runs a code review on the user-specified directory."""
     args = get_args(sys.argv[1:])
-    source_filenames = list(get_source_filenames(args.source_directory))
+    source_filenames = list(
+        get_source_filenames(
+            args.source_directory, filter_files_by_suffix=args.filter_files_by_suffix
+        )
+    )
     source_contents = get_source_contents(source_filenames)
-    _ = get_prompt(source_contents, max_length=MAX_PROMPT_LENGTH)
+    prompt = get_prompt(source_contents, max_length=MAX_PROMPT_LENGTH)
+    print(f"Prompt:\n{prompt}")
+    print("=" * 79)
+    response = openai.ChatCompletion.create(
+        model=MODEL,
+        messages=[
+            {"role": "system", "content": "You are a code review assistant."},
+            {"role": "user", "content": prompt},
+        ],
+    )
+    print(f"Response:\n{response}")
 
 
 if __name__ == "__main__":

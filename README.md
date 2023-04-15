@@ -19,7 +19,8 @@ pip install backseat-driver
 ## Usage
 
 Users need to [create an OpenAI account](https://platform.openai.com/signup)
-and API key for Backseat Driver to be able to request code review from a
+and API key.
+Backseat Driver needs the API key to be able to request code review from a
 language model.
 Set the `OPENAI_API_KEY` environment variable to your API key.
 
@@ -35,27 +36,27 @@ $0.002 * 4.096 = $0.008192, or just under 1 cent.
 
 Run Backseat Driver on the command line with the following.
 
-```console
-foo@bar:~$ backseat-driver my_script.py
+```shell
+backseat-driver my_script.py
 ```
 
 Provide multiple scripts for simultaneous code review of all given files.
 
-```console
-foo@bar:~$ backseat-driver script1.py script2.py script3.py
+```shell
+backseat-driver script1.py script2.py script3.py
 ```
 
 Wildcard operators also work as expected.
 
-```console
-foo@bar:~$ backseat-driver *.py
+```shell
+backseat-driver *.py
 ```
 
 Set the `fail_under` flag to cause Backseat Driver to exit with an error if the
 model gives the code a lower grade than what you have specified.
 
-```console
-foo@bar:~$ backseat-driver --fail_under B my_package/*.py
+```shell
+backseat-driver --fail_under B my_package/*.py
 ```
 
 ### GitHub Actions
@@ -91,7 +92,7 @@ options:
 ## Example output
 
 You can try Backseat Driver on the input program below to see how it works.
-Copy the code below into `test.py`.
+Copy the code into `test.py`.
 
 ```python
 """A file for testing prompt creation."""
@@ -125,8 +126,8 @@ def hailstone(n):
 
 Run Backseat Driver with the following.
 
-```console
-foo@bar:~$ backseat-driver test.py
+```shell
+backseat-driver test.py
 ```
 
 What Backseat Driver says:

@@ -56,7 +56,7 @@ Set the `fail_under` flag to cause Backseat Driver to exit with an error if the
 model gives the code a lower grade than what you have specified.
 
 ```shell
-backseat-driver --fail_under B my_package/*.py
+backseat-driver --fail_under B *.py
 ```
 
 ### GitHub Actions
@@ -81,7 +81,7 @@ usage: backseat-driver [-h] [--fail_under {A,B,C,D}] filenames [filenames ...]
 Requests a code review from a large language model (LLM). The model will grade the code based on readability, expressiveness, and organization. The output will include a letter grade in ['A', 'B', 'C', 'D', 'F'], as well as the model's reasoning.
 
 positional arguments:
-  filenames             The files to pass to the LLm for code review.
+  filenames             The files to pass to the LLM for code review.
 
 options:
   -h, --help            show this help message and exit

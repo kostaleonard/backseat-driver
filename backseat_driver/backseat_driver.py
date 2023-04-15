@@ -109,7 +109,7 @@ def get_args(args: list[str]) -> Namespace:
         "as well as the model's reasoning."
     )
     parser.add_argument(
-        "filenames", nargs="+", help="The files to pass to the LLm for code review."
+        "filenames", nargs="+", help="The files to pass to the LLM for code review."
     )
     parser.add_argument(
         "--fail_under",

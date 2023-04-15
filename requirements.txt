@@ -3,4 +3,6 @@ pytest
 pytest-cov
 black
 pre-commit
+build
+twine
 openai

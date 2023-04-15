@@ -1,5 +1,7 @@
 # Backseat Driver
 
+Requests a code review from a large language model.
+
 Software developers want reviews from colleagues so that they can improve the
 code they write.
 But often, a developer's peers are too busy or lack the context to provide
@@ -24,15 +26,51 @@ Backseat Driver goes beyond linting, looking for deeper ways to improve code.
 
 ## Installation
 
-TODO pip install
+```shell
+pip install backseat-driver
+```
 
 ## Usage
 
-TODO users need to specify an OpenAI API key
+Users need to [create an OpenAI account](https://platform.openai.com/signup)
+and API key for Backseat Driver to be able to request code review from a
+language model.
+Set the `OPENAI_API_KEY` environment variable to your API key.
+
+Note that OpenAI will charge your account for Backseat Driver's requests.
+Each Backseat Driver invocation will make a request of at most 4096 tokens on a
+language model.
+[ChatGPT's current pricing model](https://openai.com/pricing) is $0.002 per 1K
+tokens.
+At this price, users can expect each call to Backseat Driver to cost
+$0.002 * 4.096 = $0.008192, or just under 1 cent.
 
 ### Local
 
-TODO
+Run Backseat Driver on the command line with the following.
+
+```console
+foo@bar:~$ backseat-driver my_script.py
+```
+
+Provide multiple scripts for simultaneous code review of all given files.
+
+```console
+foo@bar:~$ backseat-driver script1.py script2.py script3.py
+```
+
+Wildcard operators also work as expected.
+
+```console
+foo@bar:~$ backseat-driver *.py
+```
+
+Set the `fail_under` flag to cause Backseat Driver to exit with an error if the
+model gives the code a lower grade than what you have specified.
+
+```console
+foo@bar:~$ backseat-driver --fail_under B my_package/*.py
+```
 
 ### GitHub Actions
 
@@ -47,12 +85,27 @@ backseat-driver:
   filter_files_by_suffix: ".py"
 ```
 
+## Help
+
+```console
+foo@bar:~$ backseat-driver -h
+usage: backseat-driver [-h] [--fail_under {A,B,C,D}] filenames [filenames ...]
+
+Requests a code review from a large language model (LLM). The model will grade the code based on readability, expressiveness, and organization. The output will include a letter grade in ['A', 'B', 'C', 'D', 'F'], as well as the model's reasoning.
+
+positional arguments:
+  filenames             The files to pass to the LLm for code review.
+
+options:
+  -h, --help            show this help message and exit
+  --fail_under {A,B,C,D}
+                        If specified, exit with non-zero status if the LLM's grade falls below the given value. This value is not inclusive: if this value is "B" and the LLM gives a final grade of "B," then the program will exit with a zero status. If not specified, then the program will exit with a zero status no matter the LLM's grade.
+```
+
 ## Example output
 
 You can try Backseat Driver on the input program below to see how it works.
-Copy the code below into a file and run Backseat Driver with the following.
-
-TODO show python command to reproduce this output
+Copy the code below into `test.py`.
 
 ```python
 """A file for testing prompt creation."""
@@ -82,6 +135,12 @@ def hailstone(n):
         return [n] + hailstone(n // 2)
     return [n] + hailstone(3 * n + 1)
 
+```
+
+Run Backseat Driver with the following.
+
+```console
+foo@bar:~$ backseat-driver test.py
 ```
 
 What Backseat Driver says:

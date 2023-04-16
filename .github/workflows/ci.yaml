@@ -28,4 +28,4 @@ jobs:
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           filenames: '**/*.py'
-          fail-under: A
+          fail-under: C

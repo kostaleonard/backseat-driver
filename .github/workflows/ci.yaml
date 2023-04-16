@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run Backseat Driver on this repository
-        uses: actions/backseat-driver-action@v1
+        uses: kostaleonard/backseat-driver-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           filenames: '**/*.py'

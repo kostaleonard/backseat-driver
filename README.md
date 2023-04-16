@@ -3,7 +3,7 @@
 Requests a code review from a large language model.
 
 Software developers want reviews so that they can improve their code.
-But developers are busy.
+However, developers are busy.
 Peers may be unavailable or lack the context to provide comments.
 Backseat Driver prompts a large language model to give code a letter grade for
 readability, expressiveness, and organization.
@@ -74,7 +74,7 @@ Get a code review on every push by adding Backseat Driver to your CI.
 
 Include the following code in your GitHub Workflow `.yml` file.
 Adjust the parameters as necessary to fit your use case.
-See [this GitHub Action page](https://github.com/marketplace/actions/backseat-driver)
+See [the GitHub Action page](https://github.com/marketplace/actions/backseat-driver)
 for more details.
 
 ```yaml
@@ -110,7 +110,7 @@ You can try Backseat Driver on the input program below to see how it works.
 Copy the code into `test.py`.
 
 ```python
-"""A file for testing prompt creation."""
+"""A file for testing Backseat Driver."""
 
 
 def fib(n):

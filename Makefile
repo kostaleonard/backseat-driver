@@ -1,7 +1,7 @@
 all: run
 
 run:
-	PYTHONPATH=. python backseat_driver/backseat_driver.py $(shell find . -name *.py)
+	PYTHONPATH=. python backseat_driver/backseat_driver.py $(shell find . -name "*.py")
 
 install:
 	pip install -r requirements.txt

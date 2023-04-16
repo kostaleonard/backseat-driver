@@ -18,6 +18,8 @@ pip install backseat-driver
 
 ## Usage
 
+Users can run Backseat Driver from the command line or as a GitHub Action.
+
 Users need to [create an OpenAI account](https://platform.openai.com/signup)
 and API key.
 Backseat Driver needs the API key to be able to request code review from a
@@ -32,7 +34,7 @@ tokens.
 At this price, users can expect each call to Backseat Driver to cost
 $0.002 * 4.096 = $0.008192, or just under 1 cent.
 
-### Local
+### Command line
 
 Run Backseat Driver on the command line with the following.
 
@@ -52,6 +54,13 @@ Wildcard operators also work as expected.
 backseat-driver *.py
 ```
 
+Here is an example that gets all Python files under the current directory on a
+Unix system.
+
+```shell
+backseat-driver $(find . -name "*.py")
+```
+
 Set the `fail_under` flag to cause Backseat Driver to exit with an error if the
 model gives the code a lower grade than what you have specified.
 
@@ -61,15 +70,21 @@ backseat-driver --fail_under B *.py
 
 ### GitHub Actions
 
-TODO
+Get a code review on every push by adding Backseat Driver to your CI.
+
+Include the following code in your GitHub Workflow `.yml` file.
+Adjust the parameters as necessary to fit your use case.
+See [this GitHub Action page](https://github.com/marketplace/actions/backseat-driver)
+for more details.
 
 ```yaml
-# TODO not sure what source-directory should be in GitHub Actions
-backseat-driver:
-  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-  fail_under: B
-  source_directory: /
-  filter_files_by_suffix: ".py"
+- uses: actions/checkout@v3
+- name: Run Backseat Driver on this repository
+  uses: kostaleonard/backseat-driver-action@v2
+  with:
+    openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+    filenames: '**/*.py'
+    fail-under: B
 ```
 
 ## Help
